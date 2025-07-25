@@ -1,0 +1,37 @@
+---
+- hosts: all
+  tasks:
+    - name: check for nginx
+      apt: name=nginx state=latest
+      become: yes
+    - name: check nginx running
+      service:
+          name: nginx
+          state: started
+      become: yes
+    - name: copy site config
+      copy:
+        src: ./testsite/static_site.cfg
+        dest: /etc/nginx/sites-available/static_site.cfg
+      become: yes
+    - name: link config
+      file:
+        src: /etc/nginx/sites-available/static_site.cfg
+        dest: /etc/nginx/sites-enabled/default
+        state: link
+      become: yes
+    - name: create site dir
+      file:
+        path: /var/www/testsite
+        state: directory
+        mode: 755
+      become: yes
+    - name: copy site stuff
+      copy:
+        src: ./testsite/index.html
+        dest: /var/www/testsite
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+      become: yes
